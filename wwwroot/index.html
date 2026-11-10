@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudentManagement — Academic Portal</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Cpath d='M16 7L5 12.5 16 18l9-4.5V20h2v-7.5L16 7zm-6 11.2v4.3c0 1.9 2.7 3.5 6 3.5s6-1.6 6-3.5v-4.3l-6 3-6-3z' fill='white'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Navigation -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <div>
+          <h1>StudentManagement</h1>
+          <p class="subtitle">ASP.NET Core REST API Console</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div id="healthBadge" class="health-pill health-loading" title="GET /api/health">
+          <span class="dot"></span>
+          <span id="healthText">Checking API...</span>
+        </div>
+        <a href="/api" target="_blank" class="btn btn-ghost">API Routes</a>
+        <button id="btnAddStudent" class="btn btn-primary" type="button">
+          <span aria-hidden="true">+</span> Add Student
+        </button>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- KPI Stats Grid -->
+      <section class="stats-grid" aria-label="Student Statistics">
+        <article class="stat-card">
+          <div class="stat-label">Total Students</div>
+          <div class="stat-value" id="statTotal">—</div>
+          <div class="stat-foot">All enrolled records</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Active Students</div>
+          <div class="stat-value accent-green" id="statActive">—</div>
+          <div class="stat-foot">Currently active</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Inactive Students</div>
+          <div class="stat-value accent-amber" id="statInactive">—</div>
+          <div class="stat-foot">Graduated / on hold</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Average GPA</div>
+          <div class="stat-value accent-indigo" id="statAvgGpa">—</div>
+          <div class="stat-foot">Scale out of 10.00</div>
+        </article>
+      </section>
+
+      <!-- Department Quick Chips -->
+      <section class="dept-bar" aria-label="Departments">
+        <span class="dept-bar-label">Departments:</span>
+        <div id="deptChips" class="dept-chips"></div>
+      </section>
+
+      <!-- Filters & Controls -->
+      <section class="panel">
+        <div class="toolbar">
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+            <input id="searchInput" type="search" placeholder="Search by name, email, or enrollment no..." autocomplete="off" />
+          </div>
+
+          <div class="filters">
+            <select id="departmentFilter" aria-label="Filter by department">
+              <option value="">All Departments</option>
+            </select>
+
+            <select id="statusFilter" aria-label="Filter by status">
+              <option value="">All Statuses</option>
+              <option value="true">Active Only</option>
+              <option value="false">Inactive Only</option>
+            </select>
+
+            <select id="sortBySelect" aria-label="Sort by">
+              <option value="id">Sort: ID</option>
+              <option value="firstName">Sort: First Name</option>
+              <option value="department">Sort: Department</option>
+              <option value="semester">Sort: Semester</option>
+              <option value="gpa">Sort: GPA</option>
+              <option value="enrollmentDate">Sort: Enrolled</option>
+            </select>
+
+            <button id="btnSortOrder" class="btn btn-outline" type="button" title="Toggle sort direction">
+              ↑ Asc
+            </button>
+          </div>
+        </div>
+
+        <!-- Students Table -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Enrollment No.</th>
+                <th>Department</th>
+                <th>Semester</th>
+                <th>GPA</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableBody">
+              <tr>
+                <td colspan="7" class="empty-state">Loading students...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination & Middleware Telemetry Footer -->
+        <div class="panel-footer">
+          <div class="telemetry" id="telemetryText">
+            Ready
+          </div>
+          <div class="pagination">
+            <span id="pageInfo" class="page-info">Page 1 of 1</span>
+            <button id="btnPrevPage" class="btn btn-outline btn-sm" type="button">Previous</button>
+            <button id="btnNextPage" class="btn btn-outline btn-sm" type="button">Next</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Create / Edit Student Modal -->
+  <div id="studentModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Student</h2>
+        <button id="btnCloseModal" class="icon-btn" type="button" aria-label="Close modal">✕</button>
+      </div>
+
+      <form id="studentForm" novalidate>
+        <div id="formErrorBanner" class="error-banner hidden"></div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="firstName">First Name *</label>
+            <input id="firstName" name="firstName" type="text" required minlength="2" maxlength="60" placeholder="e.g. Ananya" />
+          </div>
+
+          <div class="field">
+            <label for="lastName">Last Name *</label>
+            <input id="lastName" name="lastName" type="text" required minlength="2" maxlength="60" placeholder="e.g. Iyer" />
+          </div>
+
+          <div class="field full">
+            <label for="email">Email Address *</label>
+            <input id="email" name="email" type="email" required maxlength="120" placeholder="name@university.edu" />
+          </div>
+
+          <div class="field">
+            <label for="enrollmentNumber">Enrollment No. *</label>
+            <input id="enrollmentNumber" name="enrollmentNumber" type="text" required minlength="3" maxlength="30" placeholder="e.g. CS2025010" />
+          </div>
+
+          <div class="field">
+            <label for="department">Department *</label>
+            <input id="department" name="department" type="text" required minlength="2" maxlength="80" list="departmentSuggestions" placeholder="e.g. Computer Science" />
+            <datalist id="departmentSuggestions">
+              <option value="Computer Science"></option>
+              <option value="Electronics"></option>
+              <option value="Mechanical"></option>
+              <option value="Data Science"></option>
+              <option value="Civil Engineering"></option>
+            </datalist>
+          </div>
+
+          <div class="field">
+            <label for="semester">Semester (1–12) *</label>
+            <input id="semester" name="semester" type="number" required min="1" max="12" value="1" />
+          </div>
+
+          <div class="field">
+            <label for="gpa">GPA (0.0–10.0) *</label>
+            <input id="gpa" name="gpa" type="number" required min="0" max="10" step="0.01" value="8.50" />
+          </div>
+
+          <div class="field">
+            <label for="enrollmentDate">Enrollment Date</label>
+            <input id="enrollmentDate" name="enrollmentDate" type="date" />
+          </div>
+
+          <div class="field checkbox-field" id="activeFieldGroup">
+            <label class="checkbox-label">
+              <input id="isActive" name="isActive" type="checkbox" checked />
+              <span>Active Enrollment</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btnCancelModal" class="btn btn-ghost" type="button">Cancel</button>
+          <button id="btnSubmitStudent" class="btn btn-primary" type="submit">Save Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2 id="deleteTitle">Delete Student</h2>
+        <button id="btnCloseDelete" class="icon-btn" type="button" aria-label="Close modal">✕</button>
+      </div>
+      <p id="deleteMessage" class="modal-text">Are you sure you want to delete this student?</p>
+      <div class="modal-footer">
+        <button id="btnCancelDelete" class="btn btn-ghost" type="button">Cancel</button>
+        <button id="btnConfirmDelete" class="btn btn-danger" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
+

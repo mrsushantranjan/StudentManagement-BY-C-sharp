@@ -1,0 +1,69 @@
+@BaseUrl = http://localhost:5165
+
+### API Discovery Info
+GET {{BaseUrl}}/api
+Accept: application/json
+
+### Health Check
+GET {{BaseUrl}}/api/health
+Accept: application/json
+
+### List Students (with filtering, sorting, pagination)
+GET {{BaseUrl}}/api/students?page=1&pageSize=10&sortBy=id&sortOrder=asc
+Accept: application/json
+
+### Filter Students by Department & Search
+GET {{BaseUrl}}/api/students?department=Computer%20Science&search=Aarav
+Accept: application/json
+
+### Get Student Statistics
+GET {{BaseUrl}}/api/students/stats
+Accept: application/json
+
+### Get Student by ID
+GET {{BaseUrl}}/api/students/1
+Accept: application/json
+
+### Create Student
+POST {{BaseUrl}}/api/students
+Content-Type: application/json
+
+{
+  "firstName": "Ananya",
+  "lastName": "Iyer",
+  "email": "ananya.iyer@university.edu",
+  "enrollmentNumber": "CS2025010",
+  "department": "Computer Science",
+  "semester": 3,
+  "gpa": 9.15,
+  "enrollmentDate": "2025-08-01"
+}
+
+### Update Student
+PUT {{BaseUrl}}/api/students/1
+Content-Type: application/json
+
+{
+  "firstName": "Aarav",
+  "lastName": "Sharma",
+  "email": "aarav.sharma@university.edu",
+  "enrollmentNumber": "CS2024001",
+  "department": "Computer Science",
+  "semester": 6,
+  "gpa": 9.10,
+  "enrollmentDate": "2024-08-01",
+  "isActive": true
+}
+
+### Patch Student Status
+PATCH {{BaseUrl}}/api/students/1/status
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+### Delete Student
+DELETE {{BaseUrl}}/api/students/4
+Accept: application/json
+

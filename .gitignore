@@ -1,0 +1,17 @@
+# Build artifacts
+bin/
+obj/
+out/
+
+# .NET / IDE / OS files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.sln.docstates
+.DS_Store
+
+# Stray runtime/tool directories
+.local/
+Library/
